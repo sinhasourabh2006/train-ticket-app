@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Train Ticket Generator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('https://www.transparenttextures.com/patterns/train-track.png'), linear-gradient(to right, #e0f7fa, #fff);
+      background-repeat: repeat;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .logo img {
+      height: 60px;
+    }
+    h2 {
+      text-align: center;
+      color: #00796b;
+    }
+    label {
+      font-weight: 600;
+      color: #333;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .row .field {
+      flex: 1;
+      position: relative;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      border-color: #00796b;
+      outline: none;
+    }
+    .ticket {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #e0f2f1;
+      border-left: 5px solid #00796b;
+      animation: fadeIn 0.5s ease-in-out;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .ticket h3 {
+      margin-top: 0;
+      color: #004d40;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    ul.suggestions {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid #ccc;
+      max-height: 100px;
+      overflow-y: auto;
+      background: white;
+      position: absolute;
+      width: 100%;
+      z-index: 10;
+      border-radius: 4px;
+    }
+    ul.suggestions li {
+      padding: 8px;
+      cursor: pointer;
+    }
+    ul.suggestions li:hover {
+      background: #e0f2f1;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Indian_Railways_Logo.svg" alt="Indian Railways Logo">
+  </div>
+  <h2>Train Ticket Generator</h2>
+  <form id="ticketForm" autocomplete="off">
+    <div class="row">
+      <div class="field">
+        <label for="from">From:</label>
+        <input type="text" id="from" oninput="filterStations(this, 'fromList')" required>
+        <ul id="fromList" class="suggestions"></ul>
+      </div>
+      <div class="field">
+        <label for="to">To:</label>
+        <input type="text" id="to" oninput="filterStations(this, 'toList')" required>
+        <ul id="toList" class="suggestions"></ul>
+      </div>
+    </div>
+    <label for="passengers">No. of Passengers:</label>
+    <input type="number" id="passengers" min="1" max="10" value="1" required>
+
+    <button type="button" onclick="generateTicket()">Generate Ticket</button>
+  </form>
+
+  <div class="ticket" id="ticket">
+    <h3>Indian Railways Ticket</h3>
+    <p><strong>PNR:</strong> <span id="pnr"></span></p>
+    <p><strong>From:</strong> <span id="fromPreview"></span></p>
+    <p><strong>To:</strong> <span id="toPreview"></span></p>
+    <p><strong>No. of Passengers:</strong> <span id="passengerPreview"></span></p>
+    <p><strong>Date & Time:</strong> <span id="dateTimePreview"></span></p>
+    <p><strong>Status:</strong> CNF</p>
+    <button onclick="window.print()">Print</button>
+    <button onclick="resetForm()">New Ticket</button>
+  </div>
+</div>
+<script>
+const stationCodes = ["CSMT", "LTT", "NDLS", "BSP", "BPL", "HWH", "ET", "TATA", "CSTM", "MAS", "CNB", "GKP", "PNBE", "RNC"];
+
+function filterStations(inputEl, listId) {
+  const list = document.getElementById(listId);
+  list.innerHTML = "";
+  const query = inputEl.value.toUpperCase();
+  if (!query) return;
+  const matches = stationCodes.filter(code => code.startsWith(query));
+  matches.forEach(code => {
+    const li = document.createElement("li");
+    li.textContent = code;
+    li.onclick = () => {
+      inputEl.value = code;
+      list.innerHTML = "";
+    };
+    list.appendChild(li);
+  });
+}
+
+function generateTicket() {
+  const from = document.getElementById("from").value.toUpperCase();
+  const to = document.getElementById("to").value.toUpperCase();
+  const passengers = document.getElementById("passengers").value;
+  const now = new Date();
+const datetime = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
+
+  const pnr = Math.floor(1000000000 + Math.random() * 9000000000);
+  document.getElementById("pnr").innerText = pnr;
+  document.getElementById("fromPreview").innerText = from;
+  document.getElementById("toPreview").innerText = to;
+  document.getElementById("passengerPreview").innerText = passengers;
+  document.getElementById("dateTimePreview").innerText = datetime;
+  document.getElementById("ticket").style.display = "block";
+
+  fetch("/save-ticket", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pnr, from, to, passengers, datetime })
+  });
+}
+
+function resetForm() {
+  document.getElementById("ticketForm").reset();
+  document.getElementById("ticket").style.display = "none";
+}
+</script>
+</body>
+</html>
